@@ -21,7 +21,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/summarize', {
+      const response = await fetch('https://audio-summarizer-xi.vercel.app/summarize', {  // Updated to Vercel backend URL
         method: 'POST',
         body: formData,
       });
