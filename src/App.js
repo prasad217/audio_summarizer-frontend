@@ -1,32 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
-
-// Replace with your Render backend URL or the server you're using
-const socket = io('https://audio-summarizer-4m05.onrender.com'); 
+import React, { useState } from 'react';
 
 function App() {
   const [file, setFile] = useState(null);
   const [summary, setSummary] = useState('');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    socket.on('summary_response', (data) => {
-      setSummary(data.summary);
-      setError('');
-    });
-
-    socket.on('connect', () => {
-      console.log('Connected to server');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-    });
-
-    return () => {
-      socket.off('summary_response');
-    };
-  }, []);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -40,13 +17,25 @@ function App() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const arrayBuffer = reader.result;
-      const data = { file: arrayBuffer };
-      socket.emit('summarize', data);
-    };
-    reader.readAsArrayBuffer(file);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('https://audio-summarizer-4m05.onrender.com/summarize', {  // Ensure this is the correct backend URL
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      setSummary(data.summary);
+      setError('');  // Clear any errors if the request was successful
+    } catch (error) {
+      setError('There was a problem with the fetch operation: ' + error.message);
+    }
   };
 
   return (
