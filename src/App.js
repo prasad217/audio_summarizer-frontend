@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-// Define server URLs
-const servers = {
-  primary: 'https://audio-summarizer-4m05.onrender.com',
-  secondary: 'https://audio-summarizer-xi.vercel.app',
-};
+const socket = io('https://audio-summarizer-4m05.onrender.com', {
+  transports: ['websocket', 'polling'] // Add polling as a fallback
+});
 
 function App() {
   const [file, setFile] = useState(null);
   const [summary, setSummary] = useState('');
   const [error, setError] = useState('');
-  const [server, setServer] = useState(servers.primary); // Default to primary server
-
-  // Initialize socket connection based on selected server
-  const socket = io(server);
 
   useEffect(() => {
     socket.on('summary_response', (data) => {
@@ -23,17 +17,17 @@ function App() {
     });
 
     socket.on('connect', () => {
-      console.log(`Connected to ${server}`);
+      console.log('Connected to server');
     });
 
     socket.on('disconnect', () => {
-      console.log(`Disconnected from ${server}`);
+      console.log('Disconnected from server');
     });
 
     return () => {
       socket.off('summary_response');
     };
-  }, [server]);
+  }, []);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -56,15 +50,9 @@ function App() {
     reader.readAsArrayBuffer(file);
   };
 
-  const switchServer = () => {
-    setServer(server === servers.primary ? servers.secondary : servers.primary);
-  };
-
   return (
     <div className="App">
       <h1>Voice Summarizer</h1>
-      <button onClick={switchServer}>Switch Server</button>
-      <p>Currently connected to: {server}</p>
       <form onSubmit={handleSubmit}>
         <input type="file" onChange={handleFileChange} />
         <button type="submit">Summarize</button>
