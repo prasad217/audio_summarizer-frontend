@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('https://audio-summarizer-4m05.onrender.com', {
-  transports: ['websocket', 'polling'] // Add polling as a fallback
-});
+// Replace with your Render backend URL or the server you're using
+const socket = io('https://audio-summarizer-4m05.onrender.com'); 
 
 function App() {
   const [file, setFile] = useState(null);
